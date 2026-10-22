@@ -1,0 +1,11 @@
+{
+  "name": "frogflies",
+  "version": "1.0.0",
+  "description": "Frogflies — a one-button swinging arcade game. Tap & hold to swing, catch fireflies to boost your multiplier, and outrun the firewall across four cosmic biomes.",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "npx --yes serve . -l 8080",
+    "serve": "npx --yes serve . -l 8080"
+  }
+}

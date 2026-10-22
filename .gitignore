@@ -1,0 +1,20 @@
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Design docs (suppressed from submissions)
+docs/
+
+# Local tooling
+node_modules/

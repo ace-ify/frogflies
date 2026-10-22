@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Frogflies</title>
+  <meta name="description" content="Frogflies — Tap & hold to swing, catch fireflies to boost multiplier, and outrun the firewall.">
+  <link rel="icon" type="image/png" href="assets/images/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Ambient Dynamic Embers & Fireflies Background Canvas -->
+  <canvas id="ambientCanvas"></canvas>
+
+  <!-- Atmospheric Screen Vignette & Heat Glow -->
+  <div id="screenVignette" class="screen-vignette"></div>
+
+  <!-- Main Full-Screen Viewport Container -->
+  <div class="game-viewport-wrapper">
+    <div id="arcadeCabinet" class="arcade-cabinet mode-desktop">
+      
+      <!-- Authentic 2048x2732 Game Screen Stage -->
+      <div id="gameStage" class="game-stage">
+        <!-- 100% Native HTML5 Game Canvas (No iframes) -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Retro CRT Scanline Shader Overlay (toggleable) -->
+        <div id="crtOverlay" class="crt-overlay disabled"></div>
+
+        <!-- In-Game Minimalist Diegetic HUD -->
+        <div class="hud-layer">
+          <div class="hud-top-bar">
+            <!-- Left: High Score Record & Guardian Swarm Status -->
+            <div class="hud-left-group">
+              <div class="hud-record-badge">
+                <span class="hud-record-label">BEST</span>
+                <span id="hudBestScore" class="hud-record-val">0</span>
+              </div>
+              <div id="hudSwarmBadge" class="hud-swarm-badge ready" title="Guardian Firefly Swarm: Emergency clutch save from fatal elimination">
+                <span class="swarm-icon">✨</span>
+                <span class="swarm-label">SWARM READY</span>
+              </div>
+            </div>
+
+            <!-- Right: Minimalist Controls (Speed, Sound, Restart, Settings) -->
+            <div class="hud-actions">
+              <!-- Speed Controller (0x to 2x) -->
+              <div class="hud-speed-wrapper">
+                <button id="btnSpeed" class="hud-btn hud-speed-btn" title="Speed: Click to cycle, hold to adjust (0x - 2x)" aria-label="Gameplay Speed">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  <span id="hudSpeedVal">1.0x</span>
+                </button>
+                <div id="speedPopover" class="speed-popover">
+                  <div class="speed-popover-title">
+                    <span>SPEED</span>
+                    <span id="popoverSpeedVal" class="speed-num-glow">1.0x</span>
+                  </div>
+                  <input type="range" id="hudSpeedSlider" min="0" max="2" step="0.1" value="1.0" class="speed-slider">
+                  <div class="speed-chips-grid">
+                    <button class="speed-chip" data-speed="0">0x</button>
+                    <button class="speed-chip" data-speed="0.5">0.5x</button>
+                    <button class="speed-chip active" data-speed="1.0">1.0x</button>
+                    <button class="speed-chip" data-speed="1.5">1.5x</button>
+                    <button class="speed-chip" data-speed="2.0">2.0x</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sound Toggle Button -->
+              <button id="btnMute" class="hud-btn" title="Toggle Sound (M)" aria-label="Toggle Sound">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+              </button>
+
+              <!-- Restart Run Button -->
+              <button id="btnRestart" class="hud-btn" title="Restart Run (R)" aria-label="Restart Run">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+              </button>
+
+              <!-- Settings Drawer Button -->
+              <button id="btnCodex" class="hud-btn" title="Settings (ESC)" aria-label="Settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Minimal Start / Control Cue (fades out once played) -->
+          <div id="startPrompt" class="start-prompt">
+            <span class="prompt-text">HOLD <strong>SPACE/CLICK</strong>: SWING &bull; <strong>W/S</strong>: REEL TONGUE &bull; <strong>A/D</strong>: PUMP 360&deg; &bull; HOLD AIR: <strong>BRAKE & GLIDE</strong></span>
+          </div>
+
+          <!-- Ethereal Biome Horizon Milestone Banner -->
+          <div id="biomeBanner" class="biome-banner" aria-live="polite">
+            <div id="biomeBannerPre" class="biome-banner-pre">✦ NEW HORIZON REACHED ✦</div>
+            <div id="biomeBannerTitle" class="biome-banner-title">BIOLUMINESCENT AURORA</div>
+            <div id="biomeBannerSub" class="biome-banner-sub">Luminous Canopies & Electric Ether</div>
+          </div>
+        </div>
+
+        <!-- Authentic Arcade Game Over Screen -->
+        <div id="gameOverScreen" class="gameover-screen">
+          <div class="gameover-box">
+            <h2 class="gameover-title">GAME OVER</h2>
+            <div class="gameover-rule"></div>
+
+            <div class="gameover-stats">
+              <div class="gameover-stat-row">
+                <span class="stat-name">DISTANCE</span>
+                <span id="finalScoreNum" class="stat-val cyan">0</span>
+              </div>
+              <div class="gameover-stat-row">
+                <span class="stat-name">MULTIPLIER</span>
+                <span id="finalMultiplierNum" class="stat-val amber">1.0x</span>
+              </div>
+              <div class="gameover-stat-row">
+                <span class="stat-name">RECORD</span>
+                <span id="recordScoreNum" class="stat-val gold">0</span>
+              </div>
+            </div>
+
+            <div id="newBestBadge" class="new-record-alert" style="display: none;">
+              NEW RECORD!
+            </div>
+
+            <button id="btnRetry" class="gameover-action-btn">
+              PRESS SPACE TO RETRY
+            </button>
+          </div>
+        </div>
+      </div>
+
+  <!-- Slide-Out Archive & Controls Drawer -->
+  <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  <aside id="codexDrawer" class="codex-drawer">
+    <div class="drawer-header">
+      <h3>Settings</h3>
+      <button id="btnCloseDrawer" class="btn-close-drawer" aria-label="Close Drawer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Section: Simulation Speed (0x to 2x) -->
+      <div>
+        <div class="drawer-section-title">Gameplay Speed</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">Simulation Velocity</div>
+            <div class="setting-desc">Scale speed of all physics, spawns & firewall (0x - 2x)</div>
+          </div>
+          <span id="drawerSpeedVal" class="speed-badge-pill">1.0x</span>
+        </div>
+        <div class="speed-slider-container">
+          <input type="range" id="drawerSpeedSlider" min="0" max="2" step="0.1" value="1.0" class="speed-slider">
+          <div class="speed-chips-grid">
+            <button class="speed-chip" data-speed="0">0x</button>
+            <button class="speed-chip" data-speed="0.5">0.5x</button>
+            <button class="speed-chip active" data-speed="1.0">1.0x</button>
+            <button class="speed-chip" data-speed="1.5">1.5x</button>
+            <button class="speed-chip" data-speed="2.0">2.0x</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Display Settings -->
+      <div>
+        <div class="drawer-section-title">Display Settings</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">CRT Scanlines</div>
+            <div class="setting-desc">Simulate phosphor scanline raster</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="switchCrt">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">View Mode</div>
+            <div class="setting-desc">Desktop Widescreen, Phone, or Cabinet</div>
+          </div>
+          <div class="mode-pills">
+            <button id="pillDesktop" class="mode-pill active">Desktop</button>
+            <button id="pillPhone" class="mode-pill">Phone</button>
+            <button id="pillCabinet" class="mode-pill">Cabinet</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">Firewall Threat Glow</div>
+            <div class="setting-desc">Edge vignette pulse on proximity</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="switchDangerGlow" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">Fullscreen Mode</div>
+            <div class="setting-desc">Toggle borderless display (F)</div>
+          </div>
+          <button id="drawerBtnFullscreen" class="drawer-action-btn">Toggle Fullscreen</button>
+        </div>
+      </div>
+
+      <!-- Section: Controls Reference -->
+      <div>
+        <div class="drawer-section-title">Controls</div>
+        <div class="controls-guide">
+          <div class="control-row">
+            <span class="key-cap">SPACE / CLICK</span>
+            <span class="control-desc">Hold to shoot tongue & swing. Release to launch forward.</span>
+          </div>
+          <div class="control-row">
+            <span class="key-cap">R</span>
+            <span class="control-desc">Instant respawn / restart run</span>
+          </div>
+          <div class="control-row">
+            <span class="key-cap">M</span>
+            <span class="control-desc">Toggle sound on / off</span>
+          </div>
+          <div class="control-row">
+            <span class="key-cap">1 / 2 / 3 / 4</span>
+            <span class="control-desc">Set speed to 1x, 2x, 3x, or 4x (0 for pause)</span>
+          </div>
+          <div class="control-row">
+            <span class="key-cap">[ / ]</span>
+            <span class="control-desc">Slow down / speed up by 0.25x</span>
+          </div>
+          <div class="control-row">
+            <span class="key-cap">F</span>
+            <span class="control-desc">Toggle fullscreen</span>
+          </div>
+          <div class="control-row">
+            <span class="key-cap">ESC</span>
+            <span class="control-desc">Open / close Settings</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Soundboard -->
+      <div>
+        <div class="drawer-section-title">Isolated Audio Cues</div>
+        <div class="sfx-grid">
+          <button class="sfx-chip" data-sound="frogTongue">Tongue Shot</button>
+          <button class="sfx-chip" data-sound="pickupCaught">Firefly Catch</button>
+          <button class="sfx-chip" data-sound="frogBounce">Frog Bounce</button>
+          <button class="sfx-chip" data-sound="lilypadBounce">Lilypad Launch</button>
+          <button class="sfx-chip" data-sound="noTarget">Miss Target</button>
+          <button class="sfx-chip" data-sound="frogDeath">Frog Death</button>
+          <button class="sfx-chip" data-sound="fireCrackle">Fire Crackle</button>
+          <button class="sfx-chip" data-sound="backgroundAmbient">Night Marsh</button>
+        </div>
+      </div>
+
+      <!-- Section: Pixel Art Sprites -->
+      <div>
+        <div class="drawer-section-title">Sprite Assets</div>
+        <div class="codex-entities">
+          <div class="entity-card">
+            <div class="entity-thumb">
+              <img src="assets/images/frog.png" alt="Frog">
+            </div>
+            <div class="entity-info">
+              <h4>The Agile Frog</h4>
+              <p>Player avatar. Builds tangential swing velocity around canopy hooks.</p>
+            </div>
+          </div>
+
+          <div class="entity-card">
+            <div class="entity-thumb">
+              <img src="assets/images/collectable.png" alt="Firefly">
+            </div>
+            <div class="entity-info">
+              <h4>Firefly</h4>
+              <p>Glowing insect. Devouring fireflies increases your multiplier by +0.1x.</p>
+            </div>
+          </div>
+
+          <div class="entity-card">
+            <div class="entity-thumb">
+              <img src="assets/images/hook.png" alt="Hook">
+            </div>
+            <div class="entity-info">
+              <h4>Canopy Hook</h4>
+              <p>Branch anchor points for pendulum swings.</p>
+            </div>
+          </div>
+
+          <div class="entity-card">
+            <div class="entity-thumb">
+              <img src="assets/images/lilypad.png" alt="Lilypad">
+            </div>
+            <div class="entity-info">
+              <h4>Spring Lilypad</h4>
+              <p>Trampoline stalk that launches the frog at 1.12x velocity.</p>
+            </div>
+          </div>
+
+          <div class="entity-card">
+            <div class="entity-thumb">
+              <img src="assets/images/firewallColumn.png" alt="Firewall">
+            </div>
+            <div class="entity-info">
+              <h4>Firewall</h4>
+              <p>Accelerating inferno column that advances from behind.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Credits -->
+      <div>
+        <div class="drawer-section-title">Credits</div>          <p style="font-size: 0.74rem; color: rgba(255,255,255,0.45); line-height: 1.5;">
+          Developed with AI assistance (human-directed &amp; reviewed). Code licensed under MIT. See the repository <strong>README.md</strong> for the full license and AI disclosure.
+          </p>
+      </div>
+    </div>
+  </aside>
+
+    </div>
+  </div>
+
+  <!-- 100% Native From-Scratch Game Engine -->
+  <script src="game.js"></script>
+</body>
+</html>
