@@ -13,9 +13,9 @@
 
 <br>
 
-<video src="assets/frogflies_promo.mp4" autoplay loop muted playsinline width="720"></video>
+![Frogflies gameplay](assets/frogflies_promo.gif)
 
-<sub>🔊 Unmute for the full experience</sub>
+<sub>▶️ Watch the [full promo video](assets/frogflies_promo.mp4) with sound</sub>
 
 </div>
 
@@ -107,7 +107,7 @@ Copy the repository contents to any static file host (GitHub Pages, Netlify, itc
 ├── assets/
 │   ├── images/           # Sprites & background art (frog, hooks, lilypads, firewall, celestial bodies…)
 │   ├── sounds/           # SFX & ambient loops in .mp3/.webm (dual-codec for cross-browser playback)
-│   └── frogflies_promo.mp4
+│   └── frogflies_promo.mp4 / .gif  # Promo video + README preview GIF
 ├── docs/superpowers/     # Design spec + implementation plan for the v1.1 feature work
 ├── LICENSE               # MIT license for this repository's source code
 └── README.md
